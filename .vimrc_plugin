@@ -1,0 +1,224 @@
+" bufExplorer{{{
+let g:bufExplorerDefaultHelp=1
+let g:bufExplorerShowRelativePath=1
+let g:bufExplorerFindActive=1
+"}}}
+
+" NERD_tree {{{
+let NERDTreeDirArrows=0
+let NERDTreeHighlightCursorline=0
+let NERDTreeMapJumpNextSibling=""
+let NERDTreeMapJumpPrevSibling=""
+let NERDTreeIgnore=['\.o$[[file]]', '\.pyc$[[file]]']
+" }}}
+
+" Tagbar {{{
+nmap <silent><F8> :TagbarToggle<CR>
+let g:tagbar_ctags_bin = $VIMFILES.'/tools/ctags'
+let g:tagbar_left = 1
+let g:tagbar_hide_nonpublic = 0
+let g:tagbar_autoshowtag = 1
+let g:tagbar_show_visibility = 0
+let g:tagbar_iconchars = ['▶ ', '▼ ']
+let g:tagbar_compact = 1
+let g:tagbar_sort = 0
+
+let g:tagbar_type_typescript = {
+  \ 'ctagstype': 'typescript',
+  \ 'kinds': [
+    \ 'c:classes',
+    \ 'n:modules',
+    \ 'f:functions',
+    \ 'v:variables',
+    \ 'v:varlambdas',
+    \ 'm:members',
+    \ 'i:interfaces',
+    \ 'e:enums',
+  \ ]
+\ }
+" }}}
+
+" Signature {{{
+let g:SignatureIncludeMarks='abcdefghijk'
+let g:SignatureMap = {
+            \ 'Leader'             :  "m",
+            \ 'PlaceNextMark'      :  "m,",
+            \ 'ToggleMarkAtLine'   :  "m.",
+            \ 'PurgeMarksAtLine'   :  "m-",
+            \ 'DeleteMark'         :  "dm",
+            \ 'PurgeMarks'         :  "m<Space>",
+            \ 'PurgeMarkers'       :  "m<BS>",
+            \ 'GotoNextLineAlpha'  :  "']",
+            \ 'GotoPrevLineAlpha'  :  "'[",
+            \ 'GotoNextSpotAlpha'  :  "`]",
+            \ 'GotoPrevSpotAlpha'  :  "`[",
+            \ 'GotoNextLineByPos'  :  "]'",
+            \ 'GotoPrevLineByPos'  :  "['",
+            \ 'GotoNextSpotByPos'  :  "]`",
+            \ 'GotoPrevSpotByPos'  :  "[`",
+            \ 'GotoNextMarker'     :  "[+",
+            \ 'GotoPrevMarker'     :  "[-",
+            \ 'GotoNextMarkerAny'  :  "]=",
+            \ 'GotoPrevMarkerAny'  :  "[=",
+            \ 'ListLocalMarks'     :  "mm",
+            \ 'ListLocalMarkers'   :  "m?"
+            \ }
+" }}}
+
+" plantUML {{{
+let g:plantuml_executable_script='java -jar '.$VIMFILES.'/tools/plantuml.jar -charset UTF-8'
+" }}}
+
+"lightline {{{
+let g:tagbar_status_func = 'TagbarStatusFunc'
+
+function! TagbarStatusFunc(current, sort, fname, ...) abort
+    let g:lightline.fname = a:fname
+    return lightline#statusline(0)
+endfunction
+
+let g:lightline = {
+            \ 'colorscheme': 'landscape',
+            \ 'mode_map': { 'c': 'NORMAL' },
+            \ 'active': {
+            \   'left': [ [ 'mode', 'paste' ],
+            \		  [ 'fugitive' ],
+            \             [ 'filename' ] ],
+            \  'right': [ [ 'lineinfo' ],
+            \             [ 'percent' ],
+            \             [ 'filetype', 'fileformat', 'fileencoding' ] ]
+            \ },
+            \ 'component_function': {
+            \   'filename': 'LightlineFilename',
+            \   'modified': 'LightLineModified',
+            \   'readonly': 'LightLineReadonly',
+            \   'fugitive': 'LightLineFugitive',
+            \   'fileformat': 'LightLineFileformat',
+            \   'filetype': 'LightLineFiletype',
+            \   'fileencoding': 'LightLineFileencoding',
+            \   'mode': 'LightLineMode',
+            \ },
+            \ }
+
+function! LightLineModified()
+    return &ft =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : ''
+endfunction
+
+function! LightLineReadonly()
+    if has('nvim')
+        return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? '' : ''
+    else
+        return &ft !~? 'help\|vimfiler\|gundo' && &readonly ? 'RO' : ''
+    endif
+endfunction
+
+function! LightLineFugitive()
+    if &ft !~? 'vimfiler\|gundo' && exists("*fugitive#head")
+        let branch = fugitive#head()
+        if has('nvim')
+            return branch !=# '' ? ' '.branch : ''
+        else
+            return branch !=# '' ? branch : ''
+        endif
+    endif
+    return ''
+endfunction
+
+function! LightLineFileformat()
+    return winwidth(0) > 120 ? &fileformat : ''
+endfunction
+
+function! LightLineFiletype()
+    return winwidth(0) > 120 ? (&filetype !=# '' ? &filetype : 'no ft') : ''
+endfunction
+
+function! LightLineFileencoding()
+    return winwidth(0) > 120 ? (&fenc !=# '' ? &fenc : &enc) : ''
+endfunction
+
+function! LightLineMode()
+    return winwidth(0) > 60 ? lightline#mode() : ''
+endfunction
+
+function! LightlineFilename()
+    return ('' != expand('%') ? expand('%') : '[No Name]') .
+         \ ('' != LightLineReadonly() ? ' ' . LightLineReadonly() : '') .
+         \ ('' != LightLineModified() ? ' ' . LightLineModified() : '')
+endfunction
+
+"}}}
+
+"markdown {{{
+let g:vim_markdown_folding_disabled = 1
+"}}}
+
+"fzf{{{
+let g:fzf_command_prefix = 'Fzf'
+
+if executable('ag')
+    let $FZF_DEFAULT_COMMAND='ag --hidden --ignore .git --ignore *.pyc --ignore .repoproject -g ""'
+endif
+
+if !has('win32')
+    let g:fzf_colors =
+        \{'fg':      ['fg', 'Normal'],
+        \ 'bg':      ['bg', 'Normal'],
+        \ 'hl':      ['fg', 'Comment'],
+        \ 'fg+':     ['fg', 'CursorLine', 'CursorColum', 'Normal'],
+        \ 'bg+':     ['bg', 'Title'],
+        \ 'hl+':     ['fg', 'Statement'],
+        \ 'info':    ['fg', 'PreProc'],
+        \ 'prompt':  ['fg', 'Conditional'],
+        \ 'pointer': ['fg', 'Exception'],
+        \ 'marker':  ['fg', 'Keyword'],
+        \ 'spinner': ['fg', 'Label'],
+        \ 'header':  ['fg', 'Comment'] }
+endif
+
+map <silent><leader>o :FZF<CR>
+map <silent><leader>fb :FzfBuffers<CR>
+map <silent><leader>fl :FzfBLines<CR>
+"}}}
+
+"Ack{{{
+let g:ack_mappings = {
+      \ "t": "<C-W><CR><C-W>T",
+      \ "T": "<C-W><CR><C-W>TgT<C-W>j",
+      \ "o": "<CR>",
+      \ "O": "",
+      \ "go": "",
+      \ "h": "",
+      \ "H": "",
+      \ "v": "",
+      \ "gv": "",
+      \ "i": "<C-W><CR><C-W>K",
+      \ "gi": "<C-W><CR><C-W>K<C-W>b",
+      \ "s": "<C-W><CR><C-W>H<C-W>b<C-W>J<C-W>t",
+      \ "gs": "<C-W><CR><C-W>H<C-W>b<C-W>J" }
+"}}}
+
+"python-mode{{{
+let g:pymode_options_colorcolumn=0
+let g:pymode_folding = 1
+let g:pymode_rope_auto_project = 0
+let g:pymode_rope_goto_definition_bind = "<C-]>"
+let g:pymode_rope_goto_definition_cmd = 'e'
+let g:pymode_rope_regenerate_on_write = 0
+let g:pymode_options_max_line_length = 100
+let g:pymode_lint = 1
+let g:pymode_lint_on_write = 1
+let g:pymode_lint_checkers = ['pyflakes', 'pep8', 'mccabe', 'pylint']
+let g:pymode_lint_options_mccabe = {'complexity': 8}
+let g:pymode_lint_ignore = "C1001,C0111,C0103,E1101,W0110,W0212,W0232,W0622,R" 
+"}}}
+
+"syntastic{{{
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
+" let g:syntastic_typescript_checkers = ['tslint']
+" let g:syntastic_debug = 33
+" let g:syntastic_debug_file = "~/syntastic.log"
+" let g:neomake_logfile = "/root/neomake.log"
+"}}}

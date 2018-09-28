@@ -1,0 +1,96 @@
+"" command moving
+cnoremap <C-A> <Home>
+cnoremap <C-F> <Right>
+cnoremap <C-B> <Left>
+cnoremap <Esc>b <S-Left>
+cnoremap <Esc>f <S-Right>
+
+vmap > >gv
+vmap < <gv
+map Y y$
+
+set nu
+set rnu
+set nocursorline
+
+" Remember info about open buffers on close
+set viminfo^=%
+
+map <leader>e :edit %:p:h<cr>
+
+if has("patch-7.4.1500")
+    set foldmethod=marker
+endif
+"set keywordprg=
+
+if has('nvim')
+    tnoremap <Esc> <C-\><C-n>
+    tnoremap <A-h> <C-\><C-n><C-w>h
+    tnoremap <A-j> <C-\><C-n><C-w>j
+    tnoremap <A-k> <C-\><C-n><C-w>k
+    tnoremap <A-l> <C-\><C-n><C-w>l
+
+    if has('win32')
+        map! <S-Insert> <C-R>+
+        colorscheme molokai
+
+        function! ToggleGuiWindowFullScreen()
+            if g:GuiWindowFullScreen == 0
+                call GuiWindowFullScreen(1)
+            else
+                call GuiWindowFullScreen(0)
+            endif
+        endfunction
+        command! -nargs=0 ToggleFullScreen call ToggleGuiWindowFullScreen()
+        nmap <F11> :ToggleFullScreen<CR>
+    end
+
+    if has('unix')
+        let $TERM="screen-256color"
+
+        map <leader>s :vs<cr>:term bash<cr>
+        let g:python_host_prog='/usr/bin/python'
+    endif
+
+    set icm=split
+else
+    set t_Co=256
+endif
+
+" json format and json lint
+if executable('jq')
+    nmap <silent><leader>jq :%!jq --indent 4 .<cr>:w<cr>
+    nmap <silent><leader>jc :%!jq -c .<cr>:w<cr>
+    nmap <silent><leader>jf :%!jq --indent 4 -S .<cr>:w<cr>
+    nmap <silent><leader>jr :%!jq -c -S .<cr>:w<cr>
+    nmap <silent><leader>jl :!jq -c . % 1>/dev/null<cr>
+    vmap <silent><leader>jl :'<,'>!jq -c . % 1>/dev/null<cr>
+    vmap <silent><leader>jq :'<,'>!jq --indent 4 .<cr>:w<cr>
+endif
+
+if v:version >= 704
+    function! Undo()
+        if has('win32')
+            let l:tmpdir=expand('$USERPROFILE/.vimundo')
+        else
+            let l:tmpdir=expand('~/.vimundo')
+        endif
+
+        if !isdirectory(l:tmpdir)
+            call system('mkdir ' . l:tmpdir)
+        endif
+
+        let &undodir=l:tmpdir
+        set undofile
+        set undolevels=500 "maximum number of changes that can be undone
+    endfunction
+
+    call Undo()
+endif
+
+au BufRead *.txt set tw=500
+au BufNewFile *.py :call append(0, ["#!/usr/bin/env python", "# -*- coding: utf-8 -*-", ""])
+au FileType python map <leader>pyh :call append(0, ["#!/usr/bin/env python", "# -*- coding: utf-8 -*-", ""])<cr>
+au BufNewFile *.sh :call append(0, ["#!/bin/bash", ""])
+au FileType sh map <leader>shh :call append(0, ["#!/bin/bash", ""])<cr>
+

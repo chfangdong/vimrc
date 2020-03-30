@@ -1,0 +1,7 @@
+.git/
+.repoproject/
+node_modules/
+
+*.pyc
+*.o
+cscope.*
